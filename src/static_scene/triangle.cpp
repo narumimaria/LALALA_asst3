@@ -19,8 +19,31 @@ BBox Triangle::get_bbox() const {
 bool Triangle::intersect(const Ray& r) const {
   
   // TODO: implement ray-triangle intersection
-  
-  return false;
+    Vector3D p0 = mesh->positions[v1];
+    Vector3D p1 = mesh->positions[v2];
+    Vector3D p2 = mesh->positions[v3];
+    Vector3D e1 = p1 - p0;
+    Vector3D e2 = p2 - p0;
+    Vector3D s = r.o - p0;
+    
+    double u, v, t;
+    double ede = dot(cross(e1, r.d), e2);
+    t = - (dot(cross(s, e2), e1)) / ede;
+    if (t < r.min_t || t > r.max_t) {
+        return false;
+    }else {
+        u = - (dot(cross(s, e2), r.d)) / ede;
+        if (u < 0 || u > 1) {
+            return false;
+        }else {
+            v = (dot(cross(e1, r.d), s)) / ede;
+            if (v < 0 || v > 1) {
+                return false;
+            }else{
+                return true;
+            }
+        }
+    }
 }
 
 bool Triangle::intersect(const Ray& r, Intersection *isect) const {
@@ -28,8 +51,39 @@ bool Triangle::intersect(const Ray& r, Intersection *isect) const {
   // TODO: 
   // implement ray-triangle intersection. When an intersection takes
   // place, the Intersection data should be updated accordingly
-  
-  return false;
+    Vector3D p0 = mesh->positions[v1];
+    Vector3D p1 = mesh->positions[v2];
+    Vector3D p2 = mesh->positions[v3];
+    Vector3D e1 = p1 - p0;
+    Vector3D e2 = p2 - p0;
+    Vector3D s = r.o - p0;
+    
+    bool tri_intersect = false;
+    double u, v, t;
+    double ede = 1 / dot(cross(e1, r.d), e2);
+    t = - (dot(cross(s, e2), e1)) * ede;
+    if (t < r.min_t || t > r.max_t) {
+        return false;
+    }else {
+        u = - (dot(cross(s, e2), r.d)) * ede;
+        if (u < 0 || u > 1) {
+            return false;
+        }else {
+            v = (dot(cross(e1, r.d), s)) * ede;
+            if (v < 0 || v > 1) {
+                return false;
+            }else{
+                tri_intersect = true;
+            }
+        }
+    }
+    isect->t = t;
+    isect->bsdf = get_bsdf();
+    isect->primitive = this;
+    isect->n = mesh->normals[v1] + u * mesh->normals[v2] + v * mesh->normals[v3];
+    r.max_t = t;
+    return tri_intersect;
+
 }
 
 void Triangle::draw(const Color& c) const {
