@@ -73,7 +73,11 @@ bool Triangle::intersect(const Ray& r, Intersection *isect) const {
             if (v < 0 || v > 1) {
                 return false;
             }else{
-                tri_intersect = true;
+                if (u + v > 1) {
+                    return false;
+                }else{
+                    tri_intersect = true;
+                }
             }
         }
     }
