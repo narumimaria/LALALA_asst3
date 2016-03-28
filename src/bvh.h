@@ -119,6 +119,15 @@ class BVHAccel : public Aggregate {
  private:
   BVHNode* root; ///< root node of the BVH
 };
+    
+struct ClosestHit {
+    
+    ClosestHit(BVHNode* closestbvh, double min_t)
+    : closestbvh(closestbvh), min_t(min_t) { }
+    
+    BVHNode* closestbvh;
+    double min_t;
+};
 
 } // namespace StaticScene
 } // namespace CMU462
