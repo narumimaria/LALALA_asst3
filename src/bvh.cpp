@@ -178,7 +178,9 @@ BVHAccel::BVHAccel(const std::vector<Primitive *> &_primitives,
         
         // set current BVH's left child and right child
         int primlength = curBVH->range;
-        if ((costX != 0 && costX < costY && costX < costZ) || (costY == 0 && costX > costY && costX < costZ) || (costZ == 0 && costX < costY && costX > costZ)) {
+        if ((costX != 0 && costX < costY && costX < costZ) ||
+            (costX != 0 && ((costZ == 0 && costX < costY) || (costY == 0 && costX < costZ))) ||
+            (costX != 0 && costY == 0 && costZ == 0)) {
             
             Primitive* helpprim[primlength];
             int primcountl = 0, primcountr = 0;
@@ -198,7 +200,9 @@ BVHAccel::BVHAccel(const std::vector<Primitive *> &_primitives,
             curBVH->l = new BVHNode(bestXBl, curBVH->start, primcountl);
             curBVH->r = new BVHNode(bestXBr, curBVH->start + primcountl, primcountr);
             
-        }else if ((costY != 0 && costY < costX && costY < costZ) || (costX == 0 && costY > costX && costY < costZ) || (costZ == 0 && costY < costX && costY > costZ)) {
+        }else if ((costY != 0 && costY < costX && costY < costZ) ||
+                  (costY != 0 && ((costZ == 0 && costY < costX) || (costX == 0 && costY < costZ))) ||
+                  (costY != 0 && costX == 0 && costZ == 0)) {
             
             Primitive* helpprim[primlength];
             int primcountl = 0, primcountr = 0;
@@ -218,7 +222,9 @@ BVHAccel::BVHAccel(const std::vector<Primitive *> &_primitives,
             curBVH->l = new BVHNode(bestYBl, curBVH->start, primcountl);
             curBVH->r = new BVHNode(bestYBr, curBVH->start + primcountl, primcountr);
             
-        }else if ((costZ != 0 && costZ < costX && costZ < costY) || (costX == 0 && costZ < costX && costZ > costY) || (costY == 0 && costZ > costX && costZ < costY)) {
+        }else if ((costZ != 0 && costZ < costX && costZ < costY) ||
+                  (costZ != 0 && ((costX == 0 && costZ < costY) || (costY == 0 && costZ < costX))) ||
+                  (costZ != 0 && costX == 0 && costY == 0)) {
             
             Primitive* helpprim[primlength];
             int primcountl = 0, primcountr = 0;
