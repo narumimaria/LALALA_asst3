@@ -270,11 +270,52 @@ bool BVHAccel::intersect(const Ray &ray) const {
   // with a BVH aggregate if and only if it intersects a primitive in
   // the BVH that is not an aggregate.
   bool hit = false;
-  for (size_t p = 0; p < primitives.size(); ++p) {
-    if(primitives[p]->intersect(ray)) hit = true;
-  }
+    
+//  for (size_t p = 0; p < primitives.size(); ++p) {
+//    if(primitives[p]->intersect(ray)) hit = true;
+//  }
+    
+    bool hitlbbox = false, hitrbbox = false;
+    double t0, t1;
+    if (root->bb.intersect(ray, t0, t1)) {
+        stack<BVHNode*> bvhstack;
+        BVHNode* curBVH = root;
+        bvhstack.push(curBVH);
+        while (!bvhstack.empty()) {
+            curBVH = bvhstack.top();
+            bvhstack.pop();
+            
+            if (curBVH->isLeaf()) {
+                for (size_t j = 0; j < curBVH->range; j++) {
+                    if (primitives[curBVH->start + j]->intersect(ray)) {
+                        hit = true;
+                        break;
+                    }
+                }
+            }else {
+                
+                hitlbbox = curBVH->l->bb.intersect(ray, t0, t1);
+                hitrbbox = curBVH->r->bb.intersect(ray, t0, t1);
+                
+                if (hitlbbox) {
+                    bvhstack.push(curBVH->l);
+                }
+                if (hitrbbox) {
+                    bvhstack.push(curBVH->r);
+                }
+                if (!hitlbbox && !hitrbbox && bvhstack.empty()) {
+                    return hit;
+                }
+            }
+        }
+        
+        
+    }else {
+        return hit;
+    }
+    
+    return hit;
 
-  return hit;
 
 }
 
@@ -287,12 +328,51 @@ bool BVHAccel::intersect(const Ray &ray, Intersection *i) const {
   // You should store the non-aggregate primitive in the intersection data
   // and not the BVH aggregate itself.
 
-  bool hit = false;
-  for (size_t p = 0; p < primitives.size(); ++p) {
-    if(primitives[p]->intersect(ray, i)) hit = true;
-  }
-
-  return hit;
+    bool hit = false;
+//  for (size_t p = 0; p < primitives.size(); ++p) {
+//    if(primitives[p]->intersect(ray, i)) hit = true;
+//  }
+    
+    bool hitlbbox = false, hitrbbox = false;
+    double t0, t1;
+    if (root->bb.intersect(ray, t0, t1)) {
+        stack<BVHNode*> bvhstack;
+        BVHNode* curBVH = root;
+        bvhstack.push(curBVH);
+        while (!bvhstack.empty()) {
+            curBVH = bvhstack.top();
+            bvhstack.pop();
+            
+            if (curBVH->isLeaf()) {
+                for (size_t j = 0; j < curBVH->range; j++) {
+                    if (primitives[curBVH->start + j]->intersect(ray, i)) {
+                        hit = true;
+                        break;
+                    }
+                }
+            }else {
+            
+                hitlbbox = curBVH->l->bb.intersect(ray, t0, t1);
+                hitrbbox = curBVH->r->bb.intersect(ray, t0, t1);
+            
+                if (hitlbbox) {
+                    bvhstack.push(curBVH->l);
+                }
+                if (hitrbbox) {
+                    bvhstack.push(curBVH->r);
+                }
+                if (!hitlbbox && !hitrbbox && bvhstack.empty()) {
+                    return hit;
+                }
+            }
+        }
+        
+        
+    }else {
+        return hit;
+    }
+    
+    return hit;
 
 }
 

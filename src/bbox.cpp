@@ -13,8 +13,69 @@ bool BBox::intersect(const Ray& r, double& t0, double& t1) const {
   // Implement ray - bounding box intersection test
   // If the ray intersected the bouding box within the range given by
   // t0, t1, update t0 and t1 with the new intersection times.
-
-  return false;
+    bool itsect = false;
+    double  x_tmin = (min.x - r.o.x) / r.d.x;
+    if ((r.o + x_tmin * r.d).y >= min.y &&
+        (r.o + x_tmin * r.d).y <= max.y &&
+        (r.o + x_tmin * r.d).z >= min.z &&
+        (r.o + x_tmin * r.d).z <= max.z) {
+        t0 = x_tmin;
+        itsect = true;
+    }else {
+        double y_tmin = (min.y - r.o.y) / r.d.y;
+        if ((r.o + y_tmin * r.d).x >= min.x &&
+            (r.o + y_tmin * r.d).x <= max.x &&
+            (r.o + y_tmin * r.d).z >= min.z &&
+            (r.o + y_tmin * r.d).z <= max.z) {
+            t0 = y_tmin;
+            itsect = true;
+        }else {
+            double z_tmin = (min.z - r.o.z) / r.d.z;
+            if ((r.o + z_tmin * r.d).y >= min.y &&
+                (r.o + z_tmin * r.d).y <= max.y &&
+                (r.o + z_tmin * r.d).x >= min.x &&
+                (r.o + z_tmin * r.d).x <= max.x) {
+                t0 = z_tmin;
+                itsect = true;
+            }
+        }
+    }
+    double  x_tmax = (max.x - r.o.x) / r.d.x;
+    if ((r.o + x_tmax * r.d).y >= min.y &&
+        (r.o + x_tmax * r.d).y <= max.y &&
+        (r.o + x_tmax * r.d).z >= min.z &&
+        (r.o + x_tmax * r.d).z <= max.z) {
+        t1 = x_tmax;
+        itsect = true;
+    }else {
+        double y_tmax = (max.y - r.o.y) / r.d.y;
+        if ((r.o + y_tmax * r.d).x >= min.x &&
+            (r.o + y_tmax * r.d).x <= max.x &&
+            (r.o + y_tmax * r.d).z >= min.z &&
+            (r.o + y_tmax * r.d).z <= max.z) {
+            t1 = y_tmax;
+            itsect = true;
+        }else {
+            double z_tmax = (max.z - r.o.z) / r.d.z;
+            if ((r.o + z_tmax * r.d).y >= min.y &&
+                (r.o + z_tmax * r.d).y <= max.y &&
+                (r.o + z_tmax * r.d).x >= min.x &&
+                (r.o + z_tmax * r.d).x <= max.x) {
+                t1 = z_tmax;
+                itsect = true;
+            }
+        }
+    }
+    
+    if (itsect) {
+        if (t0 > t1) {
+            double t = t0;
+            t0 = t1;
+            t1 = t;
+        }
+    }
+    
+    return itsect;
   
 }
 
