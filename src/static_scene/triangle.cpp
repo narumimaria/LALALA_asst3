@@ -12,8 +12,23 @@ BBox Triangle::get_bbox() const {
   
   // TODO: 
   // compute the bounding box of the triangle
+    Vector3D min;
+    Vector3D max;
+    Vector3D p[3];
+    p[0] = mesh->positions[v1];
+    p[1] = mesh->positions[v2];
+    p[2] = mesh->positions[v3];
+    min = p[0]; max = p[2];
+    for (int i = 0; i < 3; i++) {
+        min.x = std::min(min.x, p[i].x);
+        min.y = std::min(min.y, p[i].y);
+        min.z = std::min(min.z, p[i].z);
+        max.x = std::max(max.x, p[i].x);
+        max.y = std::max(max.y, p[i].y);
+        max.z = std::max(max.z, p[i].z);
+    }
   
-  return BBox();
+  return BBox(min, max);
 }
 
 bool Triangle::intersect(const Ray& r) const {
