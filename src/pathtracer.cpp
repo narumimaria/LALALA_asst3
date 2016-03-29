@@ -427,7 +427,7 @@ Spectrum PathTracer::trace_ray(const Ray &r) {
   // indirect lighting components calculated in the code below. The starter
   // code overwrites L_out by (.5,.5,.5) so that you can test your geometry
   // queries before you implement path tracing.
-  L_out = Spectrum(5.f, 5.f, 5.f);
+  L_out = Spectrum(0, 0, 0);
 
   Vector3D hit_p = r.o + r.d * isect.t;
   Vector3D hit_n = isect.n;
@@ -447,9 +447,9 @@ Spectrum PathTracer::trace_ray(const Ray &r) {
   // Extend the below code to compute the direct lighting for all the lights
   // in the scene, instead of just the dummy light we provided in part 1.
 
-  InfiniteHemisphereLight light(Spectrum(5.f, 5.f, 5.f));
-  //DirectionalLight light(Spectrum(5.f, 5.f, 5.f), Vector3D(1.0, -1.0, 0.0));
-
+//  InfiniteHemisphereLight light(Spectrum(5.f, 5.f, 5.f));
+  DirectionalLight light(Spectrum(.5f, .5f, .5f), Vector3D(1.0, -1.0, 0.0));
+    
   Vector3D dir_to_light;
   float dist_to_light;
   float pdf;
@@ -475,6 +475,17 @@ Spectrum PathTracer::trace_ray(const Ray &r) {
       // note that computing dot(n,w_in) is simple
       // in surface coordinates since the normal is [0 0 1]
       double cos_theta = std::max(0.0, w_in[2]);
+//      Vector3D a = hit_n;
+//      a.normalize();
+//      Vector3D b = w_in;
+//      b.normalize();
+//      double ab = dot(a, b);
+//      double cos_theta = (2 - (a - b).norm2()) / (2 * ab);
+//      if (cos_theta > 1) {
+//          cos_theta = 1;
+//      }else if (cos_theta < 0) {
+//          cos_theta = 0;
+//      }
 
       // evaluate surface bsdf
       Spectrum f = isect.bsdf->f(w_out, w_in);
@@ -482,8 +493,20 @@ Spectrum PathTracer::trace_ray(const Ray &r) {
       // TODO:
       // Construct a shadow ray and compute whether the intersected surface is
       // in shadow and accumulate reflected radiance
+      Intersection itsct_occlude;
+      Vector3D origin = hit_p + EPS_D * dir_to_light;
+      if (bvh->intersect(Ray(origin, dir_to_light), &itsct_occlude)) {
+          if (itsct_occlude.t > 0) {
+              // current hit point is occluded by another object, in shadow
+//              L_out = f * cos_theta;
+//              return Spectrum(0,0,0);
+          }
+      }else {
+          L_out += light_L * cos_theta * f * scale * (1 / pdf);
+      }
+      
   }
-
+    
   // TODO:
   // Compute an indirect lighting estimate using pathtracing with Monte Carlo.
   // Note that Ray objects have a depth field now; you should use this to avoid

@@ -284,32 +284,63 @@ bool BVHAccel::intersect(const Ray &ray) const {
     bool hitlbbox = false, hitrbbox = false;
     double t0, t1;
     if (root->bb.intersect(ray, t0, t1)) {
-        stack<BVHNode*> bvhstack;
-        BVHNode* curBVH = root;
-        bvhstack.push(curBVH);
-        while (!bvhstack.empty()) {
-            curBVH = bvhstack.top();
-            bvhstack.pop();
+        stack<ClosestHit*> bvhstack_front;
+        stack<ClosestHit*> bvhstack_back;
+        ClosestHit* curBVH = new ClosestHit(root, t0);
+        bvhstack_front.push(curBVH);
+        ClosestHit* curHit = new ClosestHit(root, t1);
+        while (!bvhstack_front.empty() || !bvhstack_back.empty()) {
+            if (!bvhstack_front.empty()) {
+                curBVH = bvhstack_front.top();
+                bvhstack_front.pop();
+            }else {
+                curBVH = bvhstack_back.top();
+                bvhstack_back.pop();
+                if (curBVH->min_t > curHit->min_t) {
+                    continue;
+                }
+            }
             
-            if (curBVH->isLeaf()) {
-                for (size_t j = 0; j < curBVH->range; j++) {
-                    if (primitives[curBVH->start + j]->intersect(ray)) {
+            
+            if (curBVH->closestbvh->isLeaf()) {
+                for (size_t j = 0; j < curBVH->closestbvh->range; j++) {
+                    if (primitives[curBVH->closestbvh->start + j]->intersect(ray)) {
                         hit = true;
-                        break;
                     }
                 }
             }else {
                 
-                hitlbbox = curBVH->l->bb.intersect(ray, t0, t1);
-                hitrbbox = curBVH->r->bb.intersect(ray, t0, t1);
+                double tl0, tl1, tr0, tr1;
+                tl0 = t0; tr0 = t0; tl1 = t1; tr1 = t1;
+                hitlbbox = curBVH->closestbvh->l->bb.intersect(ray, tl0, tl1);
+                hitrbbox = curBVH->closestbvh->r->bb.intersect(ray, tr0, tr1);
                 
-                if (hitlbbox) {
-                    bvhstack.push(curBVH->l);
+                if (hitlbbox && hitrbbox) {
+                    if (tl0 < tr0) {
+                        ClosestHit* leftHit = new ClosestHit(curBVH->closestbvh->l, tl0);
+                        ClosestHit* rightHit = new ClosestHit(curBVH->closestbvh->r, tr0);
+                        bvhstack_front.push(leftHit);
+                        bvhstack_back.push(rightHit);
+                        t0 = tl0;
+                        t1 = tl1;
+                    }else {
+                        ClosestHit* leftHit = new ClosestHit(curBVH->closestbvh->l, tl0);
+                        ClosestHit* rightHit = new ClosestHit(curBVH->closestbvh->r, tr0);
+                        bvhstack_back.push(leftHit);
+                        bvhstack_front.push(rightHit);
+                        t0 = tr0;
+                        t1 = tr1;
+                    }
                 }
-                if (hitrbbox) {
-                    bvhstack.push(curBVH->r);
+                if (hitrbbox && !hitlbbox) {
+                    ClosestHit* rightHit = new ClosestHit(curBVH->closestbvh->r, tr0);
+                    bvhstack_front.push(rightHit);
                 }
-                if (!hitlbbox && !hitrbbox && bvhstack.empty()) {
+                if (hitlbbox && !hitrbbox) {
+                    ClosestHit* leftHit = new ClosestHit(curBVH->closestbvh->l, tl0);
+                    bvhstack_front.push(leftHit);
+                }
+                if (!hitlbbox && !hitrbbox && bvhstack_front.empty() && bvhstack_back.empty()) {
                     return hit;
                 }
             }
@@ -321,7 +352,6 @@ bool BVHAccel::intersect(const Ray &ray) const {
     }
     
     return hit;
-
 
 }
 

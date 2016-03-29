@@ -114,7 +114,7 @@ Ray Camera::generate_ray(double x, double y) const {
   // TODO:
   // compute position of the input sensor sample coordinate on the
   // canonical sensor plane one unit away from the pinhole.
-//    x = 1; y = 0.5;
+//    x = 0.5; y = 0.5;
     
     double h = 2 * tan(radians(vFov / 2));
     double w = 2 * tan(radians(hFov / 2));

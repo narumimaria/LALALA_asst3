@@ -72,6 +72,9 @@ bool Triangle::intersect(const Ray& r, Intersection *isect) const {
     Vector3D e1 = p1 - p0;
     Vector3D e2 = p2 - p0;
     Vector3D s = r.o - p0;
+    if (dot(cross(e1, e2), r.d) == 0) {
+        return false;
+    }
     
     bool tri_intersect = false;
     double u, v, t;
@@ -99,8 +102,9 @@ bool Triangle::intersect(const Ray& r, Intersection *isect) const {
     isect->t = t;
     isect->bsdf = get_bsdf();
     isect->primitive = this;
-    isect->n = mesh->normals[v1] + u * mesh->normals[v2] + v * mesh->normals[v3];
+    isect->n = (1 - u - v) * mesh->normals[v1] + u * mesh->normals[v2] + v * mesh->normals[v3];
     r.max_t = t;
+    isect->n.normalize();
     return tri_intersect;
 
 }
