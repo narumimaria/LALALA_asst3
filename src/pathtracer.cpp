@@ -500,6 +500,8 @@ Spectrum PathTracer::trace_ray(const Ray &r) {
               // current hit point is occluded by another object, in shadow
 //              L_out = f * cos_theta;
 //              return Spectrum(0,0,0);
+          }else {
+              L_out += light_L * cos_theta * f * scale * (1 / pdf);
           }
       }else {
           L_out += light_L * cos_theta * f * scale * (1 / pdf);

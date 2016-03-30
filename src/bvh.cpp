@@ -178,8 +178,8 @@ BVHAccel::BVHAccel(const std::vector<Primitive *> &_primitives,
         
         // set current BVH's left child and right child
         int primlength = curBVH->range;
-        if ((costX != 0 && costX < costY && costX < costZ) ||
-            (costX != 0 && ((costZ == 0 && costX < costY) || (costY == 0 && costX < costZ))) ||
+        if ((costX != 0 && costX <= costY && costX <= costZ) ||
+            (costX != 0 && ((costZ == 0 && costX <= costY) || (costY == 0 && costX <= costZ))) ||
             (costX != 0 && costY == 0 && costZ == 0)) {
             
             Primitive* helpprim[primlength];
@@ -200,8 +200,8 @@ BVHAccel::BVHAccel(const std::vector<Primitive *> &_primitives,
             curBVH->l = new BVHNode(bestXBl, curBVH->start, primcountl);
             curBVH->r = new BVHNode(bestXBr, curBVH->start + primcountl, primcountr);
             
-        }else if ((costY != 0 && costY < costX && costY < costZ) ||
-                  (costY != 0 && ((costZ == 0 && costY < costX) || (costX == 0 && costY < costZ))) ||
+        }else if ((costY != 0 && costY <= costX && costY <= costZ) ||
+                  (costY != 0 && ((costZ == 0 && costY <= costX) || (costX == 0 && costY <= costZ))) ||
                   (costY != 0 && costX == 0 && costZ == 0)) {
             
             Primitive* helpprim[primlength];
@@ -222,8 +222,8 @@ BVHAccel::BVHAccel(const std::vector<Primitive *> &_primitives,
             curBVH->l = new BVHNode(bestYBl, curBVH->start, primcountl);
             curBVH->r = new BVHNode(bestYBr, curBVH->start + primcountl, primcountr);
             
-        }else if ((costZ != 0 && costZ < costX && costZ < costY) ||
-                  (costZ != 0 && ((costX == 0 && costZ < costY) || (costY == 0 && costZ < costX))) ||
+        }else if ((costZ != 0 && costZ <= costX && costZ <= costY) ||
+                  (costZ != 0 && ((costX == 0 && costZ <= costY) || (costY == 0 && costZ <= costX))) ||
                   (costZ != 0 && costX == 0 && costY == 0)) {
             
             Primitive* helpprim[primlength];
@@ -394,13 +394,15 @@ bool BVHAccel::intersect(const Ray &ray, Intersection *i) const {
                 for (size_t j = 0; j < curBVH->closestbvh->range; j++) {
                     Intersection itsct;
                     if (primitives[curBVH->closestbvh->start + j]->intersect(ray, &itsct)) {
-                        hit = true;
-                        curHit->closestbvh = curBVH->closestbvh;
-                        curHit->min_t = curBVH->min_t;
-                        i->t = itsct.t;
-                        i->primitive = itsct.primitive;
-                        i->bsdf = itsct.bsdf;
-                        i->n = itsct.n;
+                        if (itsct.t < curHit->min_t) {
+                            hit = true;
+                            curHit->closestbvh = curBVH->closestbvh;
+                            curHit->min_t = itsct.t;
+                            i->t = itsct.t;
+                            i->primitive = itsct.primitive;
+                            i->bsdf = itsct.bsdf;
+                            i->n = itsct.n;
+                        }
                     }
                 }
             }else {
@@ -439,6 +441,9 @@ bool BVHAccel::intersect(const Ray &ray, Intersection *i) const {
                     return hit;
                 }
             }
+        }
+        if (curHit->closestbvh->range == 2 && curHit->closestbvh->start == 5) {
+            
         }
         
         

@@ -41,6 +41,16 @@ bool Triangle::intersect(const Ray& r) const {
     Vector3D e2 = p2 - p0;
     Vector3D s = r.o - p0;
     
+    Matrix3x3 A;
+    for (size_t i = 0; i < 3; i++) {
+        A(i,0) = e1[i];
+        A(i,1) = e2[i];
+        A(i,2) = -r.d[i];
+    }
+    if (A.det() == 0) {
+        return false;
+    }
+    
     double u, v, t;
     double ede = dot(cross(e1, r.d), e2);
     t = - (dot(cross(s, e2), e1)) / ede;
@@ -69,42 +79,74 @@ bool Triangle::intersect(const Ray& r, Intersection *isect) const {
     Vector3D p0 = mesh->positions[v1];
     Vector3D p1 = mesh->positions[v2];
     Vector3D p2 = mesh->positions[v3];
+    
     Vector3D e1 = p1 - p0;
     Vector3D e2 = p2 - p0;
     Vector3D s = r.o - p0;
-    if (dot(cross(e1, e2), r.d) == 0) {
+    Matrix3x3 A;
+    for (size_t i = 0; i < 3; i++) {
+        A(i,0) = e1[i];
+        A(i,1) = e2[i];
+        A(i,2) = -r.d[i];
+    }
+    if (A.det() == 0) {
         return false;
     }
     
     bool tri_intersect = false;
-    double u, v, t;
-    double ede = 1 / dot(cross(e1, r.d), e2);
-    t = - (dot(cross(s, e2), e1)) * ede;
-    if (t < r.min_t || t > r.max_t) {
+    Vector3D uvt = A.inv() * s;
+    if (uvt.z < r.min_t || uvt.z > r.max_t) {
+        return false;
+    }else if (uvt.x < 0 || uvt.x > 1) {
+        return false;
+    }else if (uvt.y < 0 || uvt.y > 1) {
+        return false;
+    }else if (uvt.x + uvt.y > 1) {
         return false;
     }else {
-        u = - (dot(cross(s, e2), r.d)) * ede;
-        if (u < 0 || u > 1) {
-            return false;
-        }else {
-            v = (dot(cross(e1, r.d), s)) * ede;
-            if (v < 0 || v > 1) {
-                return false;
-            }else{
-                if (u + v > 1) {
-                    return false;
-                }else{
-                    tri_intersect = true;
-                }
-            }
-        }
+        tri_intersect = true;
     }
-    isect->t = t;
+    isect->t = uvt.z;
     isect->bsdf = get_bsdf();
     isect->primitive = this;
-    isect->n = (1 - u - v) * mesh->normals[v1] + u * mesh->normals[v2] + v * mesh->normals[v3];
-    r.max_t = t;
+    isect->n = (1 - uvt.x - uvt.y) * mesh->normals[v1] + uvt.x * mesh->normals[v2] + uvt.y * mesh->normals[v3];
+    r.max_t = uvt.z;
     isect->n.normalize();
+    
+    if (p0.z > 0 && p1.z > 0 && p2.z > 0) {
+        
+    }
+    
+    
+//    bool tri_intersect = false;
+//    double u, v, t;
+//    double ede = 1 / dot(cross(e1, r.d), e2);
+//    t = - (dot(cross(s, e2), e1)) * ede;
+//    if (t < r.min_t || t > r.max_t) {
+//        return false;
+//    }else {
+//        u = - (dot(cross(s, e2), r.d)) * ede;
+//        if (u < 0 || u > 1) {
+//            return false;
+//        }else {
+//            v = (dot(cross(e1, r.d), s)) * ede;
+//            if (v < 0 || v > 1) {
+//                return false;
+//            }else{
+//                if (u + v > 1) {
+//                    return false;
+//                }else{
+//                    tri_intersect = true;
+//                }
+//            }
+//        }
+//    }
+//    isect->t = t;
+//    isect->bsdf = get_bsdf();
+//    isect->primitive = this;
+//    isect->n = (1 - u - v) * mesh->normals[v1] + u * mesh->normals[v2] + v * mesh->normals[v3];
+//    r.max_t = t;
+//    isect->n.normalize();
     return tri_intersect;
 
 }
