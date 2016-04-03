@@ -389,7 +389,6 @@ bool BVHAccel::intersect(const Ray &ray, Intersection *i) const {
                 }
             }
             
-            
             if (curBVH->closestbvh->isLeaf()) {
                 for (size_t j = 0; j < curBVH->closestbvh->range; j++) {
                     Intersection itsct;
@@ -442,9 +441,7 @@ bool BVHAccel::intersect(const Ray &ray, Intersection *i) const {
                 }
             }
         }
-        if (curHit->closestbvh->range == 2 && curHit->closestbvh->start == 5) {
-            
-        }
+        
         
         
     }else {
