@@ -21,8 +21,8 @@ bool Sphere::test(const Ray& r, double& t1, double& t2) const {
     if (delta < 0) {
         return false;
     }else{
-        t1 = - (b - sqrt(delta)) / (2 * a);
-        t2 = - (b + sqrt(delta)) / (2 * a);
+        t1 = - (b + sqrt(delta)) / (2 * a);
+        t2 = - (b - sqrt(delta)) / (2 * a);
         return true;
     }
 }

@@ -447,9 +447,6 @@ bool BVHAccel::intersect(const Ray &ray, Intersection *i) const {
     }else {
         return hit;
     }
-//    if (i->primitive == primitives[1]) {
-//        
-//    }
     
     return hit;
 

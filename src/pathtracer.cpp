@@ -412,7 +412,7 @@ Spectrum PathTracer::trace_ray(const Ray &r) {
     // If you have an environment map, return the Spectrum this ray
     // samples from the environment map. If you don't return black.
 
-    return Spectrum(0,0,0);
+    return Spectrum(0.99,0.96,0.6);
   }
 
   // log ray hit
@@ -421,13 +421,14 @@ Spectrum PathTracer::trace_ray(const Ray &r) {
   #endif
 
   Spectrum L_out = isect.bsdf->get_emission(); // Le
+    Spectrum L_ind = Spectrum(0,0,0);
 
   // TODO :
   // Instead of initializing this value to a constant color, use the direct,
   // indirect lighting components calculated in the code below. The starter
   // code overwrites L_out by (.5,.5,.5) so that you can test your geometry
   // queries before you implement path tracing.
-  L_out = Spectrum(0, 0, 0);
+//  L_out = Spectrum(0, 0, 0);
 
   Vector3D hit_p = r.o + r.d * isect.t;
   Vector3D hit_n = isect.n;
@@ -487,7 +488,9 @@ Spectrum PathTracer::trace_ray(const Ray &r) {
             // in shadow and accumulate reflected radiance
             Intersection itsct_occlude;
             Vector3D origin = hit_p + EPS_D * dir_to_light;
-            if (bvh->intersect(Ray(origin, dir_to_light), &itsct_occlude)) {
+            Ray r_occu = Ray(origin, dir_to_light);
+            r_occu.max_t = dist_to_light;
+            if (bvh->intersect(r_occu, &itsct_occlude)) {
                 if (itsct_occlude.t > 0) {
               
                 }else {
@@ -498,13 +501,42 @@ Spectrum PathTracer::trace_ray(const Ray &r) {
             }
       
         }
+        
     }
-    
-  // TODO:
-  // Compute an indirect lighting estimate using pathtracing with Monte Carlo.
-  // Note that Ray objects have a depth field now; you should use this to avoid
-  // traveling down one path forever.
+    // TODO:
+    // Compute an indirect lighting estimate using pathtracing with Monte Carlo.
+    // Note that Ray objects have a depth field now; you should use this to avoid
+    // traveling down one path forever.
+    if (r.depth == max_ray_depth) {
+        
+        
+    }else {
+        
+        // randomly select a new ray direction (it may be
+        // reflection or transmittence ray depending on
+        // surface type
+        Vector3D w_i;
+        float pdf_i;
+        Spectrum f_ind = isect.bsdf->sample_f(w_out, &w_i, &pdf_i);
+        double cos_theta = w_i.z;
+        w_i = o2w * w_i;
+        w_i.normalize();
+        
+        double terminatep;
+        float brightness = f_ind.illum();
+        terminatep = 1 - brightness;
+        
+        if ((double)(std::rand()) / RAND_MAX < terminatep) {
+            
+        }else {
+            Spectrum light_ind = trace_ray(Ray(hit_p, w_i, INF_F, r.depth+1));
+            L_ind += light_ind * cos_theta * f_ind * (1.0 / (pdf_i * (1 - terminatep)));
+            L_out += L_ind;
+        }
+        
+    }
 
+    
   return L_out;
 }
 
