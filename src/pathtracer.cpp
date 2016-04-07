@@ -422,7 +422,6 @@ Spectrum PathTracer::trace_ray(const Ray &r) {
 
   Spectrum L_out = isect.bsdf->get_emission(); // Le
     Spectrum L_ind = Spectrum(0,0,0);
-
   // TODO :
   // Instead of initializing this value to a constant color, use the direct,
   // indirect lighting components calculated in the code below. The starter
@@ -536,7 +535,6 @@ Spectrum PathTracer::trace_ray(const Ray &r) {
         
     }
 
-    
   return L_out;
 }
 
