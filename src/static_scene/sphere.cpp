@@ -23,7 +23,7 @@ bool Sphere::test(const Ray& r, double& t1, double& t2) const {
     }else{
         t1 = - (b + sqrt(delta)) / (2 * a);
         t2 = - (b - sqrt(delta)) / (2 * a);
-        if (t1 < 0 || t2 < 0) {
+        if (t1 < 0 && t2 < 0) {
             return false;
         }
         return true;
@@ -54,8 +54,17 @@ bool Sphere::intersect(const Ray& r, Intersection *i) const {
     if (!test(r, t1, t2)) {
         return false;
     }else{
-        i->t = t1;
-        i->n = normal(r.o + t1 * r.d);
+        double t;
+        if (t1 < 0 && t1 < t2) {
+            t = t2;
+        }else {
+            t = t1;
+        }
+        i->t = t;
+        i->n = normal(r.o + t * r.d);
+//        if (dot(i->n, r.d) > 0) {
+//            i->n *= -1;
+//        }
         i->bsdf = get_bsdf();
         i->primitive = this;
         return true;

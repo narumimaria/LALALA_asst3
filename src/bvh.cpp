@@ -393,7 +393,7 @@ bool BVHAccel::intersect(const Ray &ray, Intersection *i) const {
                 for (size_t j = 0; j < curBVH->closestbvh->range; j++) {
                     Intersection itsct;
                     if (primitives[curBVH->closestbvh->start + j]->intersect(ray, &itsct)) {
-                        if (itsct.t < curHit->min_t) {
+                        if (itsct.t < curHit->min_t && itsct.t > 0) {
                             hit = true;
                             curHit->closestbvh = curBVH->closestbvh;
                             curHit->min_t = itsct.t;

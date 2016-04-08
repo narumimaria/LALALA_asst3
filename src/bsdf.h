@@ -102,7 +102,7 @@ class BSDF {
   /**
    * Refraction helper
    */
-  virtual bool refract(const Vector3D& wo, Vector3D* wi, float ior);
+  virtual bool refract(const Vector3D& wo, Vector3D* wi, float ior, float* pdf);
 
 }; // class BSDF
 

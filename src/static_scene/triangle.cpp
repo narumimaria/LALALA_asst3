@@ -112,9 +112,6 @@ bool Triangle::intersect(const Ray& r, Intersection *isect) const {
     isect->n = (1 - uvt.x - uvt.y) * mesh->normals[v1] + uvt.x * mesh->normals[v2] + uvt.y * mesh->normals[v3];
     r.max_t = uvt.z;
     isect->n.normalize();
-    if (dot(isect->n, r.d) > 0) {
-        isect->n *= -1;
-    }
     
     
 //    bool tri_intersect = false;

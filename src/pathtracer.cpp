@@ -399,6 +399,16 @@ void PathTracer::key_press(int key) {
 
 Spectrum PathTracer::trace_ray(const Ray &r) {
 
+//    GlassBSDF g_bsdf{ {1,1,1}, {1,1,1}, 1, 2};
+//    Vector3D test_out{0.01,0.01,0.99};
+//    test_out.normalize();
+//    Vector3D test_in{0,0,1};
+//    test_in.normalize();
+//    float pdf{};
+//    srand(19920810);
+//    Spectrum result = g_bsdf.f(test_out, test_in);
+//    result = g_bsdf.sample_f(test_out, &test_in, &pdf);
+    
   Intersection isect;
 
   if (!bvh->intersect(r, &isect)) {
@@ -412,7 +422,8 @@ Spectrum PathTracer::trace_ray(const Ray &r) {
     // If you have an environment map, return the Spectrum this ray
     // samples from the environment map. If you don't return black.
 
-    return Spectrum(0.99,0.96,0.6);
+//    return Spectrum(0.99,0.96,0.6);
+      return Spectrum(0,0,0);
   }
 
   // log ray hit
@@ -430,18 +441,25 @@ Spectrum PathTracer::trace_ray(const Ray &r) {
 //  L_out = Spectrum(0, 0, 0);
 
   Vector3D hit_p = r.o + r.d * isect.t;
-  Vector3D hit_n = isect.n;
+  
 
   // make a coordinate system for a hit point
   // with N aligned with the Z direction.
-  Matrix3x3 o2w;
-  make_coord_space(o2w, isect.n);
-  Matrix3x3 w2o = o2w.T();
+  Matrix3x3 o2w_1;
+  make_coord_space(o2w_1, isect.n);
+  Matrix3x3 w2o = o2w_1.T();
 
   // w_out points towards the source of the ray (e.g.,
   // toward the camera if this is a primary ray)
   Vector3D w_out = w2o * (r.o - hit_p);
   w_out.normalize();
+    if (dot(isect.n, r.d) > 0) {
+        isect.n *= -1;
+    }
+    Vector3D hit_n = isect.n;
+    Matrix3x3 o2w_2;
+    make_coord_space(o2w_2, isect.n);
+    w2o = o2w_2.T();
 
   // TODO:
   // Extend the below code to compute the direct lighting for all the lights
@@ -477,7 +495,7 @@ Spectrum PathTracer::trace_ray(const Ray &r) {
 
             // note that computing dot(n,w_in) is simple
             // in surface coordinates since the normal is [0 0 1]
-            double cos_theta = std::max(0.0, w_in[2]);
+//            double cos_theta = std::max(0.0, w_in[2]);
 
             // evaluate surface bsdf
             Spectrum f = isect.bsdf->f(w_out, w_in);
@@ -493,10 +511,10 @@ Spectrum PathTracer::trace_ray(const Ray &r) {
                 if (itsct_occlude.t > 0) {
               
                 }else {
-                    L_out += light_L * cos_theta * f * scale * (1 / pdf);
+                    L_out += light_L * f * scale * (1 / pdf);
                 }
             }else {
-                L_out += light_L * cos_theta * f * scale * (1 / pdf);
+                L_out += light_L * f * scale * (1 / pdf);
             }
       
         }
@@ -517,8 +535,8 @@ Spectrum PathTracer::trace_ray(const Ray &r) {
         Vector3D w_i;
         float pdf_i;
         Spectrum f_ind = isect.bsdf->sample_f(w_out, &w_i, &pdf_i);
-        double cos_theta = w_i.z;
-        w_i = o2w * w_i;
+//        double cos_theta = w_i.z;
+        w_i = o2w_1 * w_i;
         w_i.normalize();
         
         double terminatep;
@@ -528,8 +546,9 @@ Spectrum PathTracer::trace_ray(const Ray &r) {
         if ((double)(std::rand()) / RAND_MAX < terminatep) {
             
         }else {
-            Spectrum light_ind = trace_ray(Ray(hit_p, w_i, INF_F, r.depth+1));
-            L_ind += light_ind * cos_theta * f_ind * (1.0 / (pdf_i * (1 - terminatep)));
+            Vector3D origin = hit_p + EPS_D * w_i;
+            Spectrum light_ind = trace_ray(Ray(origin, w_i, INF_F, r.depth+1));
+            L_ind += light_ind * f_ind * (1.0 / (pdf_i * (1 - terminatep)));
             L_out += L_ind;
         }
         
