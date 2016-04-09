@@ -38,6 +38,9 @@ Spectrum DiffuseBSDF::f(const Vector3D& wo, const Vector3D& wi) {
 
 Spectrum DiffuseBSDF::sample_f(const Vector3D& wo, Vector3D* wi, float* pdf) {
     *wi = sampler.get_sample();
+//    wi->x = std::abs(wi->x);
+//    wi->y = std::abs(wi->y);
+//    wi->z = std::abs(wi->z);
     *pdf = 1.0 / (2.0 * PI);
     double cos_theta = std::max(0.0, wi->z);
   return albedo * (1.0 / PI) * cos_theta;
@@ -191,6 +194,7 @@ bool BSDF::refract(const Vector3D& wo, Vector3D* wi, float ior, float* pdf) {
                 wi->y = 0;
             }
             *pdf = 1 - Fr;
+            *pdf = -*pdf;
             
         }
     }else {
@@ -221,6 +225,7 @@ bool BSDF::refract(const Vector3D& wo, Vector3D* wi, float ior, float* pdf) {
                     wi->y = 0;
                 }
                 *pdf = 1 - Fr;
+                *pdf = -*pdf;
                 
             }
         }

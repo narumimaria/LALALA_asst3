@@ -431,7 +431,14 @@ Spectrum PathTracer::trace_ray(const Ray &r) {
   log_ray_hit(r, isect.t);
   #endif
 
-  Spectrum L_out = isect.bsdf->get_emission(); // Le
+    Spectrum L_e = isect.bsdf->get_emission(); // Le
+    if(L_e.r > 1) {
+        L_e.r = 1;
+    }
+    if(L_e.g > 1) L_e.g = 1;
+    if(L_e.b > 1) L_e.b = 1;
+    
+    Spectrum L_out = L_e;
     Spectrum L_ind = Spectrum(0,0,0);
   // TODO :
   // Instead of initializing this value to a constant color, use the direct,
@@ -488,7 +495,9 @@ Spectrum PathTracer::trace_ray(const Ray &r) {
             // (pdf is the probability of randomly selecting the random
             // sample point on the light source -- more on this in part 2)
             Spectrum light_L = scene->lights[j]->sample_L(hit_p, &dir_to_light, &dist_to_light, &pdf);
-
+//            if (light_L.r > 1) {
+//                
+//            }
             // convert direction into coordinate space of the surface, where
             // the surface normal is [0 0 1]
             Vector3D w_in = w2o * dir_to_light;
@@ -535,20 +544,31 @@ Spectrum PathTracer::trace_ray(const Ray &r) {
         Vector3D w_i;
         float pdf_i;
         Spectrum f_ind = isect.bsdf->sample_f(w_out, &w_i, &pdf_i);
-//        double cos_theta = w_i.z;
-        w_i = o2w_1 * w_i;
+        if (pdf_i < 0) {
+            w_i = o2w_1 * w_i;
+            pdf_i = -pdf_i;
+            f_ind = -1 * f_ind;
+        }else {
+            w_i = o2w_2 * w_i;
+        }
+        
         w_i.normalize();
+        
         
         double terminatep;
         float brightness = f_ind.illum();
         terminatep = 1 - brightness;
-        
+        terminatep = 0;
         if ((double)(std::rand()) / RAND_MAX < terminatep) {
-            
-        }else {
+
+        }else
+        {
             Vector3D origin = hit_p + EPS_D * w_i;
             Spectrum light_ind = trace_ray(Ray(origin, w_i, INF_F, r.depth+1));
             L_ind += light_ind * f_ind * (1.0 / (pdf_i * (1 - terminatep)));
+            if(L_ind.r > 10 || L_ind.g > 10 || L_ind.b > 10){
+                
+            }
             L_out += L_ind;
         }
         
@@ -562,6 +582,9 @@ Spectrum PathTracer::raytrace_pixel(size_t x, size_t y) {
   // TODO:
   // Sample the pixel with coordinate (x,y) and return the result spectrum.
   // The sample rate is given by the number of camera rays per pixel.
+//    if (x < 1300 || y < 380) {
+//        return Spectrum(1,0,0);
+//    }
 
   int num_samples = ns_aa;
 
@@ -572,6 +595,9 @@ Spectrum PathTracer::raytrace_pixel(size_t x, size_t y) {
         Vector2D sample = gridSampler->get_sample();
         p.x = (x + sample.x) / sampleBuffer.w;
         p.y = (y + sample.y) / sampleBuffer.h;
+//        if (x == 700 && y == 930) {
+//            
+//        }
         s += trace_ray(camera->generate_ray(p.x, p.y));
     }
     s = s * (1.0 / num_samples);
