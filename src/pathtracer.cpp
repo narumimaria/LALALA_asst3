@@ -566,9 +566,6 @@ Spectrum PathTracer::trace_ray(const Ray &r) {
             Vector3D origin = hit_p + EPS_D * w_i;
             Spectrum light_ind = trace_ray(Ray(origin, w_i, INF_F, r.depth+1));
             L_ind += light_ind * f_ind * (1.0 / (pdf_i * (1 - terminatep)));
-            if(L_ind.r > 10 || L_ind.g > 10 || L_ind.b > 10){
-                
-            }
             L_out += L_ind;
         }
         

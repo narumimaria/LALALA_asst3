@@ -231,7 +231,7 @@ class EmissionBSDF : public BSDF {
  private:
 
   Spectrum radiance;
-  CosineWeightedHemisphereSampler3D sampler;
+  UniformHemisphereSampler3D sampler;
 
 }; // class EmissionBSDF
 

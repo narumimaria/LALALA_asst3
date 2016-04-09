@@ -242,7 +242,8 @@ Spectrum EmissionBSDF::f(const Vector3D& wo, const Vector3D& wi) {
 }
 
 Spectrum EmissionBSDF::sample_f(const Vector3D& wo, Vector3D* wi, float* pdf) {
-  *wi  = sampler.get_sample(pdf);
+  *wi  = sampler.get_sample();
+    *pdf = 1.0 / (2 * PI);
   return Spectrum();
 }
 
