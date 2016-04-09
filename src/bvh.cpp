@@ -244,6 +244,9 @@ BVHAccel::BVHAccel(const std::vector<Primitive *> &_primitives,
             curBVH->l = new BVHNode(bestZBl, curBVH->start, primcountl);
             curBVH->r = new BVHNode(bestZBr, curBVH->start + primcountl, primcountr);
         }
+        if (curBVH->l == NULL && curBVH->r == NULL && curBVH == root) {
+            break;
+        }
         
         // push left child and right child to the stack
         if (curBVH->r->range > max_leaf_size) {
