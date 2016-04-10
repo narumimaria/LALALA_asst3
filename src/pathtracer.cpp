@@ -423,6 +423,7 @@ Spectrum PathTracer::trace_ray(const Ray &r) {
     // samples from the environment map. If you don't return black.
 //    return Spectrum(0.99,0.96,0.6);
 //      return envLight->sample_L(p,&wi,&dtl,&pdf);
+      
       return envLight->sample_dir(r.d);
   }
 
