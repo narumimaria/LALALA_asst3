@@ -46,6 +46,8 @@ class EnvironmentLight : public SceneLight {
   const HDRImageBuffer* envMap;
     std::vector<double> fcp;
     std::vector<double> fmp;
+    double dtheta;
+    double dphi;
 
 }; // class EnvironmentLight
 

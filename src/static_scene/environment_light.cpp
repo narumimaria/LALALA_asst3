@@ -72,6 +72,8 @@ EnvironmentLight::EnvironmentLight(const HDRImageBuffer* envMap)
                 }
             }
         }
+        dtheta = PI / envMap->h;
+        dphi = PI / envMap->w;
         
 }
     
@@ -109,14 +111,14 @@ Spectrum EnvironmentLight::sample_L(const Vector3D& p, Vector3D* wi,
     }
     size_t idx_x = std::lower_bound(fcp_phi.begin(), fcp_phi.end(), X) - fcp_phi.begin() + 1;
     
-    double theta = idx_y / envMap->h * PI;
-    double phi = idx_x / envMap->w * 2.0 * PI;
+    double theta = idx_y * 1.0 / envMap->h * PI;
+    double phi = idx_x * 1.0 / envMap->w * 2.0 * PI;
     
-    wi->x = sinf(theta) * cosf(phi);
-    wi->y = sinf(theta) * sinf(phi);
-    wi->z = cosf(theta);
+    wi->x = sinf(theta) * sinf(phi);
+    wi->y = cosf(theta);
+    wi->z = sinf(theta) * cosf(phi);
     
-    *pdf = (fmp[idx_y] - fmp[idx_y-1]) * (fcp_phi[idx_x] - fcp_phi[idx_x-1]);
+    *pdf = (fmp[idx_y] - fmp[idx_y-1]) * (fcp_phi[idx_x] - fcp_phi[idx_x-1]) / (sin(theta) * dtheta * dphi);
     
     *distToLight = INFINITY;
 
@@ -131,7 +133,7 @@ Spectrum EnvironmentLight::sample_dir(const Vector3D& d) const {
     Vector2D xz = Vector2D(d.z, d.x);
     xz /= xz.norm();
     double phi = acos(dot(xz,Vector2D(1,0)));
-    if (d.y < 0) {
+    if (d.x < 0) {
         phi = 2.0 * PI - phi;
     }
     double map_x = std::abs((phi / (2.0 * PI))* envMap->w);
