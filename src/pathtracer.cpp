@@ -398,7 +398,13 @@ void PathTracer::key_press(int key) {
 }
 
 Spectrum PathTracer::trace_ray(const Ray &r) {
-
+    
+//    Vector3D test_d1 = Vector3D(-1, 0, -1);
+//    Vector3D test_d2 = Vector3D(0, -0.2, 0.8);
+//    test_d1.normalize();
+//    test_d2.normalize();
+//    Spectrum s1 = envLight->sample_dir(test_d1);
+//    Spectrum s2 = envLight->sample_dir(test_d2);
 //    GlassBSDF g_bsdf{ {1,1,1}, {1,1,1}, 1, 2};
 //    Vector3D test_out{0.01,0.01,0.99};
 //    test_out.normalize();
@@ -408,6 +414,7 @@ Spectrum PathTracer::trace_ray(const Ray &r) {
 //    srand(19920810);
 //    Spectrum result = g_bsdf.f(test_out, test_in);
 //    result = g_bsdf.sample_f(test_out, &test_in, &pdf);
+//    return envLight->sample_dir(r.d);
     
   Intersection isect;
 
@@ -423,8 +430,11 @@ Spectrum PathTracer::trace_ray(const Ray &r) {
     // samples from the environment map. If you don't return black.
 //    return Spectrum(0.99,0.96,0.6);
 //      return envLight->sample_L(p,&wi,&dtl,&pdf);
-      
-      return envLight->sample_dir(r.d);
+      if (envLight == nullptr) {
+          return Spectrum(0,0,0);
+      }else{
+          return envLight->sample_dir(r.d);
+      }
   }
 
   // log ray hit
@@ -477,7 +487,8 @@ Spectrum PathTracer::trace_ray(const Ray &r) {
 //  DirectionalLight light(Spectrum(.5f, .5f, .5f), Vector3D(1.0, -1.0, 0.0));
     size_t num_lights = scene->lights.size();
     for (size_t j = 0; j < num_lights; j++) {
-    
+//        if(!dynamic_cast<EnvironmentLight*>(scene->lights[j]))
+//            continue;
         Vector3D dir_to_light;
         float dist_to_light;
         float pdf;
@@ -530,6 +541,7 @@ Spectrum PathTracer::trace_ray(const Ray &r) {
         }
         
     }
+
     // TODO:
     // Compute an indirect lighting estimate using pathtracing with Monte Carlo.
     // Note that Ray objects have a depth field now; you should use this to avoid

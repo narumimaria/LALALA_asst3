@@ -80,6 +80,9 @@ EnvironmentLight::EnvironmentLight(const HDRImageBuffer* envMap)
 Spectrum EnvironmentLight::sample_L(const Vector3D& p, Vector3D* wi,
                                     float* distToLight,
                                     float* pdf) const {
+    if (envMap == NULL) {
+        return Spectrum(0,0,0);
+    }
   // TODO: Implement
     
     // uniform sampling
@@ -128,6 +131,9 @@ Spectrum EnvironmentLight::sample_L(const Vector3D& p, Vector3D* wi,
 Spectrum EnvironmentLight::sample_dir(const Vector3D& d) const {
     
   // TODO: Implement
+    if (envMap == NULL) {
+        return Spectrum(0,0,0);
+    }
     // uniform sampling
     double theta = acos(d.y);
     Vector2D xz = Vector2D(d.z, d.x);
