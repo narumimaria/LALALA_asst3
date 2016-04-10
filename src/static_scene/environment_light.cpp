@@ -127,10 +127,15 @@ Spectrum EnvironmentLight::sample_dir(const Vector3D& d) const {
     
   // TODO: Implement
     // uniform sampling
-    double theta = acos(d.z);
-    double phi = atan(d.y / d.x);
+    double theta = acos(d.y);
+    Vector2D xz = Vector2D(d.z, d.x);
+    xz /= xz.norm();
+    double phi = acos(dot(xz,Vector2D(1,0)));
+    if (d.y < 0) {
+        phi = 2.0 * PI - phi;
+    }
     double map_x = std::abs((phi / (2.0 * PI))* envMap->w);
-    double map_y = std::abs((PI - theta) / PI * envMap->h);
+    double map_y = std::abs(theta / PI * envMap->h);
     
     size_t x = floor(map_x);
     size_t y = floor(map_y);
