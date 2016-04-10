@@ -122,8 +122,14 @@ class BVHAccel : public Aggregate {
     
 struct ClosestHit {
     
-    ClosestHit(BVHNode* closestbvh, double min_t)
+    explicit ClosestHit(BVHNode* closestbvh, double min_t)
     : closestbvh(closestbvh), min_t(min_t) { }
+    
+    ClosestHit(const ClosestHit& other)
+    {
+        closestbvh = other.closestbvh;
+        min_t = other.min_t;
+    }
     
     BVHNode* closestbvh;
     double min_t;
